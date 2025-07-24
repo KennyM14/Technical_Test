@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Technical Test.sln"
+    "dotnet.defaultSolution": "Technical_Test.sln"
 }
