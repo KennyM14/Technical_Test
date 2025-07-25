@@ -1,68 +1,106 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
+using TMPro;
 
 public class Weapon : MonoBehaviour
 {
- /*   [SerializeField] private Animator anim;
-    [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private Transform firePoint;
+
+    [Header("Bullet Settings")]
+    [SerializeField] private float bulletSpeed = 15f;
+    [SerializeField] private int damage = 5;
+    [SerializeField] private float bulletLifeTime = 4f;
     [SerializeField] private float fireRate = 0.2f;
+    [SerializeField] private int maxMagazineSize = 25;
+    [SerializeField] private int currentBullets = 25;
+    [SerializeField] private int totalBullets = 75;
+    [SerializeField] private float reloadTime = 2f;
 
-    private float fireCooldown;
-    private Camera mainCamera;
-    private bool isShooting;
+    [Header("UI")]
+    [SerializeField] private TextMeshProUGUI ammoText;
+    private bool isShooting = false;
+    private bool isReloading = false;
+    private float nextFireTime;
 
 
-    private void Start()
+    public void OnReload(InputAction.CallbackContext ctx)
     {
-        mainCamera = Camera.main;
-    }
+        if (ctx.performed && !isReloading && currentBullets < maxMagazineSize && totalBullets > 0)
+        {
+            StartCoroutine(Reload());
+        }
 
-    public void OnShootInput(InputAction.CallbackContext ctx)
-    {
-        if (ctx.started)
-        {
-            isShooting = true;
-        }
-        else if (ctx.canceled)
-        {
-            isShooting = false;
-        }
     }
 
     void Update()
     {
-        RotateTowardsMouse();
-
-        if (isShooting && fireCooldown <= 0f)
+        if (isShooting && !isReloading && currentBullets > 0 && Time.time >= nextFireTime)
         {
-            Shoot();
-            fireCooldown = fireRate;
+            Fire();
+            nextFireTime = Time.time + fireRate;
         }
-        fireCooldown -= Time.deltaTime;
+
+        if (currentBullets <= 0 && !isReloading && totalBullets > 0)
+        {
+            StartCoroutine(Reload());
+        }
     }
 
-    void RotateTowardsMouse()
+    public void SetShooting(bool state)
     {
-        Vector3 mouseWorldPos = GetMouseWorldPosition(mainCamera);
-        Vector3 direction = mouseWorldPos - transform.position;
-        direction.z = 0;
-        Quaternion rotation = Quaternion.LookRotation(Vector3.forward, direction);
-        transform.rotation = rotation;
+        isShooting = state;
     }
 
-    void Shoot()
+    private void Fire()
     {
-        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
-        bullet.GetComponent<Rigidbody2D>().linearVelocity = firePoint.up * 10f; // Ajusta la velocidad
-        anim.SetTrigger("Shoot"); 
+        GameObject bullet = BulletPool.Instance.GetBullet();
+        bullet.transform.position = firePoint.position;
+        bullet.transform.rotation = firePoint.rotation;
+
+        Rigidbody rb = bullet.GetComponent<Rigidbody>();
+        rb.linearVelocity = firePoint.forward * bulletSpeed;
+
+        StartCoroutine(ReleaseAfterTime(bullet, bulletLifeTime));
+
+        currentBullets--;
+        UpdateAmmoUI();
     }
 
-    Vector3 GetMouseWorldPosition(Camera cam)
+    private IEnumerator ReleaseAfterTime(GameObject bullet, float delay)
     {
-        Vector3 mousePos = Mouse.current.position.ReadValue();
-        Vector3 worldPos = cam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, cam.nearClipPlane));
-        worldPos.z = 0;
-        return worldPos;
-    } */
+        yield return new WaitForSeconds(delay);
+        BulletPool.Instance.ReturnBullet(bullet);
+    }
+
+    private IEnumerator Reload()
+    {
+        isReloading = true;
+        Debug.Log("Reloading...");
+        yield return new WaitForSeconds(reloadTime);
+
+        int bulletsNeeded = maxMagazineSize - currentBullets;
+        int bulletsToReload = Mathf.Min(bulletsNeeded, totalBullets);
+        currentBullets += bulletsToReload;
+        totalBullets -= bulletsToReload;
+        UpdateAmmoUI();
+        isReloading = false;
+        Debug.Log("Reload complete");
+    }
+
+    public void ManualReload()
+    {
+        if (!isReloading && currentBullets < maxMagazineSize && totalBullets > 0)
+        {
+            StartCoroutine(Reload());
+        }
+    }
+
+    private void UpdateAmmoUI()
+    {
+        if (ammoText != null)
+        {
+            ammoText.text = $"{currentBullets} / {totalBullets}";
+        }
+    }
 }

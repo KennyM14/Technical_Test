@@ -14,12 +14,15 @@ public class PlayerController : MonoBehaviour
     [Header("Weapon")]
     [SerializeField] private GameObject Gun;
     private Quaternion initialGunRotation;
+    [SerializeField] private Vector3 aimingRotation = new Vector3(0, 0, 0);
+    private Weapon weapon;
 
 
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
         playerInput = GetComponent<PlayerInput>();
+        weapon = Gun.GetComponentInChildren<Weapon>();
     }
 
     void Start()
@@ -52,7 +55,8 @@ public class PlayerController : MonoBehaviour
     {
         isShooting = true;
         anim.SetBool("Shooting", true);
-        Gun.transform.localRotation = Quaternion.Euler(177f, 90f, 180f);
+        Gun.transform.localRotation = Quaternion.Euler(aimingRotation);
+        weapon?.SetShooting(true); 
     }
 
     public void StopShoot(InputAction.CallbackContext ctx)
@@ -60,6 +64,7 @@ public class PlayerController : MonoBehaviour
         isShooting = false;
         anim.SetBool("Shooting", false);
         Gun.transform.localRotation = initialGunRotation;
+        weapon?.SetShooting(false); 
     }
 
     void Update()
@@ -76,5 +81,4 @@ public class PlayerController : MonoBehaviour
         anim.SetBool("Running", isMoving);
 
     }
-
 }
