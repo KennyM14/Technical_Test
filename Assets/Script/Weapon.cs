@@ -23,6 +23,10 @@ public class Weapon : MonoBehaviour
     private bool isReloading = false;
     private float nextFireTime;
 
+    void Start()
+    {
+
+    }
 
     public void OnReload(InputAction.CallbackContext ctx)
     {
@@ -30,7 +34,6 @@ public class Weapon : MonoBehaviour
         {
             StartCoroutine(Reload());
         }
-
     }
 
     void Update()

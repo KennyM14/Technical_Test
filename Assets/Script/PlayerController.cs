@@ -4,67 +4,84 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
+    [Header("Movement & Aiming")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private Animator anim;
-    private Vector2 inputVector;
-    private CharacterController controller;
-    private PlayerInput playerInput;
-    private bool isShooting;
+    [SerializeField] private Transform graphicsTransform;
+    [SerializeField] private Transform firePoint;
+    [SerializeField] private LayerMask aimLayerMask;
+    [SerializeField] private Vector3 aimingRotation = new Vector3(0, 0, 0);
 
     [Header("Weapon")]
     [SerializeField] private GameObject Gun;
+
+    private Vector2 inputVector;
+    private Vector2 mouseScreenPos;
     private Quaternion initialGunRotation;
-    [SerializeField] private Vector3 aimingRotation = new Vector3(0, 0, 0);
+
+    private CharacterController controller;
+    private PlayerInput playerInput;
+    private Camera mainCamera;
     private Weapon weapon;
+    private bool isShooting;
+    private bool rotationAligned = false;
 
-
-    private void Awake()
+    void Awake()
     {
         controller = GetComponent<CharacterController>();
         playerInput = GetComponent<PlayerInput>();
         weapon = Gun.GetComponentInChildren<Weapon>();
+        initialGunRotation = Gun.transform.localRotation;
     }
 
     void Start()
     {
-        initialGunRotation = Gun.transform.localRotation;
+        mainCamera = Camera.main;
     }
 
-    private void OnEnable()
+    void OnEnable()
     {
-        playerInput.actions["Move"].performed += Move;
-        playerInput.actions["Move"].canceled += Move;
-        playerInput.actions["Shoot"].performed += Shoot;
-        playerInput.actions["Shoot"].canceled += StopShoot;
+        playerInput.actions["Move"].performed += OnMove;
+        playerInput.actions["Move"].canceled += OnMove;
+
+        playerInput.actions["Look"].performed += ctx => mouseScreenPos = ctx.ReadValue<Vector2>();
+        playerInput.actions["Look"].canceled += ctx => mouseScreenPos = ctx.ReadValue<Vector2>();
+
+        playerInput.actions["Shoot"].performed += OnShoot;
+        playerInput.actions["Shoot"].canceled += OnStopShoot;
     }
 
-    /*private void OnDisable()
+    void OnDisable()
     {
-        playerInput.actions["Move"].performed -= Move;
-        playerInput.actions["Move"].canceled -= Move;
-        playerInput.actions["Shoot"].performed -= Shoot;
-        playerInput.actions["Shoot"].canceled -= StopShoot;
-    } */
+        playerInput.actions["Move"].performed -= OnMove;
+        playerInput.actions["Move"].canceled -= OnMove;
 
-    public void Move(InputAction.CallbackContext ctx)
+        playerInput.actions["Look"].performed -= ctx => mouseScreenPos = ctx.ReadValue<Vector2>();
+        playerInput.actions["Look"].canceled -= ctx => mouseScreenPos = ctx.ReadValue<Vector2>();
+
+        playerInput.actions["Shoot"].performed -= OnShoot;
+        playerInput.actions["Shoot"].canceled -= OnStopShoot;
+    }
+
+    void OnMove(InputAction.CallbackContext ctx)
     {
         inputVector = ctx.ReadValue<Vector2>();
     }
 
-    public void Shoot(InputAction.CallbackContext ctx)
+    void OnShoot(InputAction.CallbackContext ctx)
     {
         isShooting = true;
-        anim.SetBool("Shooting", true);
         Gun.transform.localRotation = Quaternion.Euler(aimingRotation);
-        weapon?.SetShooting(true); 
+        rotationAligned = true; 
+        anim.SetTrigger("Shoot"); 
+        weapon?.SetShooting(true);
     }
 
-    public void StopShoot(InputAction.CallbackContext ctx)
+    void OnStopShoot(InputAction.CallbackContext ctx)
     {
         isShooting = false;
-        anim.SetBool("Shooting", false);
         Gun.transform.localRotation = initialGunRotation;
-        weapon?.SetShooting(false); 
+        weapon?.SetShooting(false);
     }
 
     void Update()
@@ -72,13 +89,38 @@ public class PlayerController : MonoBehaviour
         Vector3 move = new Vector3(inputVector.x, 0, inputVector.y);
         bool isMoving = move.magnitude > 0.1f;
 
-        if (isMoving)
-        {
-            Quaternion rotation = Quaternion.LookRotation(move);
-            transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * 15f);
-        }
         controller.Move(move * moveSpeed * Time.deltaTime);
         anim.SetBool("Running", isMoving);
 
+        Ray ray = mainCamera.ScreenPointToRay(mouseScreenPos);
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f, aimLayerMask))
+        {
+            Vector3 direction = hit.point - graphicsTransform.position;
+            direction.y = 0f;
+
+            if (direction.sqrMagnitude > 0.01f)
+            {
+                Quaternion lookRotation = Quaternion.LookRotation(direction);
+
+                if (isShooting)
+                {
+                    graphicsTransform.rotation = Quaternion.Slerp(graphicsTransform.rotation, lookRotation, Time.deltaTime * 15f);
+                }
+                else if (isMoving)
+                {
+                    Quaternion targetRotation = Quaternion.LookRotation(move);
+                    graphicsTransform.rotation = Quaternion.Slerp(graphicsTransform.rotation, targetRotation, Time.deltaTime * 10f);
+                }
+
+                // Rotar firePoint también
+                Vector3 fireDirection = hit.point - firePoint.position;
+                fireDirection.y = 0f;
+
+                if (fireDirection.sqrMagnitude > 0.01f)
+                {
+                    firePoint.rotation = Quaternion.Slerp(firePoint.rotation,Quaternion.LookRotation(fireDirection),Time.deltaTime * 25f);
+                }
+            }
+        }
     }
 }
