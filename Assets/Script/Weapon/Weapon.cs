@@ -22,6 +22,7 @@ public class Weapon : MonoBehaviour
     private bool isShooting = false;
     private bool isReloading = false;
     private float nextFireTime;
+    
 
     void Start()
     {
@@ -106,4 +107,5 @@ public class Weapon : MonoBehaviour
             ammoText.text = $"{currentBullets} / {totalBullets}";
         }
     }
+
 }

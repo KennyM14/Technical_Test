@@ -8,13 +8,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private Animator anim;
     [SerializeField] private Transform graphicsTransform;
-    [SerializeField] private Transform firePoint;
     [SerializeField] private LayerMask aimLayerMask;
     [SerializeField] private Vector3 aimingRotation = new Vector3(0, 0, 0);
 
     [Header("Weapon")]
     [SerializeField] private GameObject Gun;
-
     private Vector2 inputVector;
     private Vector2 mouseScreenPos;
     private Quaternion initialGunRotation;
@@ -25,6 +23,7 @@ public class PlayerController : MonoBehaviour
     private Weapon weapon;
     private bool isShooting;
     private bool rotationAligned = false;
+    
 
     void Awake()
     {
@@ -71,15 +70,14 @@ public class PlayerController : MonoBehaviour
     void OnShoot(InputAction.CallbackContext ctx)
     {
         isShooting = true;
-        Gun.transform.localRotation = Quaternion.Euler(aimingRotation);
-        rotationAligned = true; 
-        anim.SetTrigger("Shoot"); 
-        weapon?.SetShooting(true);
+        anim.SetBool("Shoot", true);
+        rotationAligned = false; 
     }
 
     void OnStopShoot(InputAction.CallbackContext ctx)
     {
         isShooting = false;
+        anim.SetBool("Shoot", false);
         Gun.transform.localRotation = initialGunRotation;
         weapon?.SetShooting(false);
     }
@@ -105,22 +103,26 @@ public class PlayerController : MonoBehaviour
                 if (isShooting)
                 {
                     graphicsTransform.rotation = Quaternion.Slerp(graphicsTransform.rotation, lookRotation, Time.deltaTime * 15f);
+                    Gun.transform.localRotation = Quaternion.RotateTowards(Gun.transform.localRotation, Quaternion.Euler(aimingRotation), Time.deltaTime * 300f);
+
+                    if (!rotationAligned && IsGunAligned())
+                    {
+                        rotationAligned = true;
+                        weapon?.SetShooting(true);
+                    }
                 }
                 else if (isMoving)
                 {
                     Quaternion targetRotation = Quaternion.LookRotation(move);
                     graphicsTransform.rotation = Quaternion.Slerp(graphicsTransform.rotation, targetRotation, Time.deltaTime * 10f);
                 }
-
-                // Rotar firePoint también
-                Vector3 fireDirection = hit.point - firePoint.position;
-                fireDirection.y = 0f;
-
-                if (fireDirection.sqrMagnitude > 0.01f)
-                {
-                    firePoint.rotation = Quaternion.Slerp(firePoint.rotation,Quaternion.LookRotation(fireDirection),Time.deltaTime * 25f);
-                }
             }
         }
+    }
+
+    private bool IsGunAligned()
+    {
+        float angle = Quaternion.Angle(Gun.transform.localRotation, Quaternion.Euler(aimingRotation));
+        return angle < 1f; 
     }
 }
