@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement & Aiming")]
     [SerializeField] private float moveSpeed = 5f;
+    private float gravity = -9.81f;
     [SerializeField] private Animator anim;
     [SerializeField] private Transform graphicsTransform;
     [SerializeField] private LayerMask aimLayerMask;
@@ -23,6 +24,7 @@ public class PlayerController : MonoBehaviour
     private Weapon weapon;
     private bool isShooting;
     private bool rotationAligned = false;
+    private Vector3 velocity;
     
 
     void Awake()
@@ -86,6 +88,15 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 move = new Vector3(inputVector.x, 0, inputVector.y);
         bool isMoving = move.magnitude > 0.1f;
+
+        if (controller.isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f;
+        }
+        else
+        {
+            velocity.y += gravity * Time.deltaTime;
+        }
 
         controller.Move(move * moveSpeed * Time.deltaTime);
         anim.SetBool("Running", isMoving);
