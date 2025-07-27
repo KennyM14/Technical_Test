@@ -1,46 +1,71 @@
 using UnityEngine;
+using System.Collections.Generic;
 using UnityEngine.InputSystem;
 
 public class PlayerInteractor : MonoBehaviour
 {
     [SerializeField] private float interactRange = 2f;
-    [SerializeField] private LayerMask pickableLayer;
-    private IPickable currentPickable;
+    [SerializeField] private LayerMask interactableLayers;
+    private PlayerController playerController;
+    private PlayerHealth playerHealth;
+    private List<IPickable> nearbyPickables = new List<IPickable>();
 
-
-    private void Update()
+    private void Awake()
     {
-        CheckForPickables();
+        playerController = GetComponent<PlayerController>();
+        playerHealth = GetComponent<PlayerHealth>();
     }
 
-    public void Pick(InputAction.CallbackContext ctx)
+    private void OnTriggerEnter(Collider other)
     {
-        if (!ctx.performed) return;
-
-        if (currentPickable != null)
+        if (((1 << other.gameObject.layer) & interactableLayers) != 0)
         {
-            Debug.Log("Recogiendo objeto: " + currentPickable);
-            currentPickable.OnPickUp(gameObject);
-            currentPickable = null;
-        }
-        else
-        {
-            Debug.Log("No hay objeto recogible al frente");
+            IPickable pickable = other.GetComponent<IPickable>();
+            if (pickable != null && !nearbyPickables.Contains(pickable))
+            {
+                nearbyPickables.Add(pickable);
+            }
         }
     }
-    
-    private void CheckForPickables()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(new Vector2(Screen.width / 2f, Screen.height / 2));
 
-        if (Physics.Raycast(ray, out RaycastHit hit, interactRange, pickableLayer))
+    private void OnTriggerExit(Collider other)
+    {
+        if (((1 << other.gameObject.layer) & interactableLayers) != 0)
         {
-            Debug.Log("Detectado objeto: " + hit.collider.name);
-            currentPickable = hit.collider.GetComponent<IPickable>();
+            IPickable pickable = other.GetComponent<IPickable>();
+            if (pickable != null && nearbyPickables.Contains(pickable))
+            {
+                nearbyPickables.Remove(pickable);
+            }
         }
-        else
+    }
+
+    public void Interact(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.performed || nearbyPickables.Count == 0) return;
+        IPickable closest = GetClosestPickable();
+        if (closest != null)
         {
-            currentPickable = null;
+            closest.Pick(playerController, playerHealth);
+            nearbyPickables.Remove(closest);
         }
+    }
+
+    private IPickable GetClosestPickable()
+    {
+        IPickable closest = null;
+        float minDistance = Mathf.Infinity;
+
+        foreach (IPickable pickable in nearbyPickables)
+        {
+            float distance = Vector3.Distance(transform.position, ((MonoBehaviour)pickable).transform.position);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closest = pickable;
+            }
+        }
+
+        return closest;
     }
 }

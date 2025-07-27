@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(CapsuleCollider))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement & Aiming")]
@@ -18,18 +19,20 @@ public class PlayerController : MonoBehaviour
     private Vector2 mouseScreenPos;
     private Quaternion initialGunRotation;
 
-    private CharacterController controller;
+    private Rigidbody rb;
+    private CapsuleCollider capsuleCollider;
     private PlayerInput playerInput;
     private Camera mainCamera;
     private Weapon weapon;
     private bool isShooting;
     private bool rotationAligned = false;
-    private Vector3 velocity;
-    
+    private Vector3 movement;
+    private bool isGrounded;
 
     void Awake()
     {
-        controller = GetComponent<CharacterController>();
+        rb = GetComponent<Rigidbody>();
+        capsuleCollider = GetComponent<CapsuleCollider>();
         playerInput = GetComponent<PlayerInput>();
         weapon = Gun.GetComponentInChildren<Weapon>();
         initialGunRotation = Gun.transform.localRotation;
@@ -64,12 +67,12 @@ public class PlayerController : MonoBehaviour
         playerInput.actions["Shoot"].canceled -= OnStopShoot;
     }
 
-    void OnMove(InputAction.CallbackContext ctx)
+    public void OnMove(InputAction.CallbackContext ctx)
     {
         inputVector = ctx.ReadValue<Vector2>();
     }
 
-    void OnShoot(InputAction.CallbackContext ctx)
+    public void OnShoot(InputAction.CallbackContext ctx)
     {
         isShooting = true;
         anim.SetBool("Shoot", true);
@@ -86,21 +89,11 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        Vector3 move = new Vector3(inputVector.x, 0, inputVector.y);
-        bool isMoving = move.magnitude > 0.1f;
-
-        if (controller.isGrounded && velocity.y < 0)
-        {
-            velocity.y = -2f;
-        }
-        else
-        {
-            velocity.y += gravity * Time.deltaTime;
-        }
-
-        controller.Move(move * moveSpeed * Time.deltaTime);
+        movement = new Vector3(inputVector.x, 0, inputVector.y);
+        bool isMoving = movement.magnitude > 0.1f;
         anim.SetBool("Running", isMoving);
 
+        // Apuntado
         Ray ray = mainCamera.ScreenPointToRay(mouseScreenPos);
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, aimLayerMask))
         {
@@ -124,11 +117,45 @@ public class PlayerController : MonoBehaviour
                 }
                 else if (isMoving)
                 {
-                    Quaternion targetRotation = Quaternion.LookRotation(move);
+                    Quaternion targetRotation = Quaternion.LookRotation(movement);
                     graphicsTransform.rotation = Quaternion.Slerp(graphicsTransform.rotation, targetRotation, Time.deltaTime * 10f);
                 }
             }
         }
+    }
+
+    void FixedUpdate()
+    {
+        Vector3 targetVelocity = movement * moveSpeed;
+        targetVelocity.y = rb.linearVelocity.y; 
+        
+        Vector3 velocityChange = (targetVelocity - rb.linearVelocity);
+        velocityChange.y = 0; // La velocidad vertical no cambia
+        rb.AddForce(velocityChange, ForceMode.VelocityChange);
+        
+        // Aplicar gravedad personalizada
+        if (!isGrounded)
+        {
+            rb.AddForce(new Vector3(0, gravity, 0), ForceMode.Acceleration);
+        }
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        // Verificar si está en el suelo
+        foreach (ContactPoint contact in collision.contacts)
+        {
+            if (Vector3.Dot(contact.normal, Vector3.up) > 0.7f)
+            {
+                isGrounded = true;
+                break;
+            }
+        }
+    }
+
+    void OnCollisionExit(Collision collision)
+    {
+        isGrounded = false;
     }
 
     private bool IsGunAligned()

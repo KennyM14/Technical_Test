@@ -1,6 +1,4 @@
-using UnityEngine;
-
 public interface IPickable
 {
-    void OnPickUp(GameObject player); 
+    void Pick(PlayerController playerController, PlayerHealth playerHealth); 
 }
