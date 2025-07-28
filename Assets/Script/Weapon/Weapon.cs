@@ -12,9 +12,9 @@ public class Weapon : MonoBehaviour
     [SerializeField] private int damage = 5;
     [SerializeField] private float bulletLifeTime = 4f;
     [SerializeField] private float fireRate = 0.2f;
-    [SerializeField] private int maxMagazineSize = 25;
-    [SerializeField] private int currentBullets = 25;
-    [SerializeField] private int totalBullets = 75;
+    [SerializeField] private int maxMagazineSize = 30;
+    [SerializeField] private int currentBullets = 30;
+    [SerializeField] private int totalBullets = 90;
     [SerializeField] private float reloadTime = 2f;
 
     [Header("UI")]
@@ -22,7 +22,7 @@ public class Weapon : MonoBehaviour
     private bool isShooting = false;
     private bool isReloading = false;
     private float nextFireTime;
-    
+
 
     void Start()
     {
@@ -106,6 +106,18 @@ public class Weapon : MonoBehaviour
         {
             ammoText.text = $"{currentBullets} / {totalBullets}";
         }
+    }
+
+    public void addAmmo(int amount)
+    {
+        totalBullets += amount;
+        UpdateAmmoUI();
+        Debug.Log($"Ammo added: {amount}. Total: {totalBullets}");
+    }
+
+    public bool NeedsAmmo()
+    {
+        return totalBullets < maxMagazineSize * 3;
     }
 
 }

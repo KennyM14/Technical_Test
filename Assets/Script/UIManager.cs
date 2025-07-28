@@ -1,18 +1,39 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance;
-    public GameObject keySlot;
+
+    [Header("Key Icons")]
+    public GameObject yellowKeyIcon;
+    public GameObject redKeyIcon;
+    public GameObject blueKeyIcon;
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject); // evitar duplicados
+        }
+        else
+        {
+            Instance = this;
+        }
     }
 
-    public void ShowKeySlot(bool show)
+    public void ShowKey(KeyColor keyColor, bool show)
     {
-        keySlot.SetActive(show); 
+        switch (keyColor)
+        {
+            case KeyColor.Yellow:
+                yellowKeyIcon.SetActive(show);
+                break;
+            case KeyColor.Red:
+                redKeyIcon.SetActive(show);
+                break;
+            case KeyColor.Blue:
+                blueKeyIcon.SetActive(show);
+                break;
+        }
     }
 }

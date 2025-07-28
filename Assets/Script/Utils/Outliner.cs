@@ -6,12 +6,19 @@ public class Outliner : MonoBehaviour
     public Material outlineMaterial;
     private MeshRenderer objectRenderer;
     private Material[] originalMaterials;
+    private Material[] outlinedMaterials;
     private bool isPlayerNear = false;
 
     void Start()
     {
-        objectRenderer = transform.GetChild(0).GetComponent<MeshRenderer>();
+        objectRenderer = GetComponent<MeshRenderer>();
         originalMaterials = objectRenderer.materials;
+        
+        // material original + outline
+        outlinedMaterials = new Material[originalMaterials.Length + 1];
+        originalMaterials.CopyTo(outlinedMaterials, 0);
+        outlinedMaterials[originalMaterials.Length] = outlineMaterial;
+        
         interactionUI.SetActive(false);
     }
 
@@ -20,12 +27,10 @@ public class Outliner : MonoBehaviour
         if (other.CompareTag("Player") && !isPlayerNear)
         {
             isPlayerNear = true; 
-
-            Material[] newMats = new Material[originalMaterials.Length + 1];
-            originalMaterials.CopyTo(newMats, 0);
-            newMats[newMats.Length - 1] = outlineMaterial;
-
-            objectRenderer.materials = newMats;
+            
+            // Aplicar materiales con outline
+            objectRenderer.materials = outlinedMaterials;
+            
             interactionUI.SetActive(true);
         }
     }
@@ -35,8 +40,26 @@ public class Outliner : MonoBehaviour
         if (other.CompareTag("Player") && isPlayerNear)
         {
             isPlayerNear = false; 
+            
+            // Restaurar materiales originales
             objectRenderer.materials = originalMaterials;
+            
             interactionUI.SetActive(false);
+        }
+    }
+
+    void OnDestroy()
+    {
+        // Limpiar materiales
+        if (outlinedMaterials != null)
+        {
+            for (int i = originalMaterials.Length; i < outlinedMaterials.Length; i++)
+            {
+                if (outlinedMaterials[i] != null)
+                {
+                    Destroy(outlinedMaterials[i]);
+                }
+            }
         }
     }
 }
