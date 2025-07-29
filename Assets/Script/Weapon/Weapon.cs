@@ -9,7 +9,6 @@ public class Weapon : MonoBehaviour
 
     [Header("Bullet Settings")]
     [SerializeField] private float bulletSpeed = 15f;
-    [SerializeField] private int damage = 5;
     [SerializeField] private float bulletLifeTime = 4f;
     [SerializeField] private float fireRate = 0.2f;
     [SerializeField] private int maxMagazineSize = 30;
@@ -19,15 +18,10 @@ public class Weapon : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI ammoText;
+
     private bool isShooting = false;
     private bool isReloading = false;
     private float nextFireTime;
-
-
-    void Start()
-    {
-
-    }
 
     public void OnReload(InputAction.CallbackContext ctx)
     {
@@ -51,10 +45,7 @@ public class Weapon : MonoBehaviour
         }
     }
 
-    public void SetShooting(bool state)
-    {
-        isShooting = state;
-    }
+    public void SetShooting(bool state) => isShooting = state;
 
     private void Fire()
     {
@@ -64,6 +55,9 @@ public class Weapon : MonoBehaviour
 
         Rigidbody rb = bullet.GetComponent<Rigidbody>();
         rb.linearVelocity = firePoint.forward * bulletSpeed;
+
+        Bullet bulletScript = bullet.GetComponent<Bullet>();
+        bulletScript.Initialize(owner: gameObject); // El arma es hija del Player
 
         StartCoroutine(ReleaseAfterTime(bullet, bulletLifeTime));
 
@@ -80,16 +74,15 @@ public class Weapon : MonoBehaviour
     private IEnumerator Reload()
     {
         isReloading = true;
-        Debug.Log("Reloading...");
         yield return new WaitForSeconds(reloadTime);
 
         int bulletsNeeded = maxMagazineSize - currentBullets;
         int bulletsToReload = Mathf.Min(bulletsNeeded, totalBullets);
         currentBullets += bulletsToReload;
         totalBullets -= bulletsToReload;
+
         UpdateAmmoUI();
         isReloading = false;
-        Debug.Log("Reload complete");
     }
 
     public void ManualReload()
@@ -108,16 +101,11 @@ public class Weapon : MonoBehaviour
         }
     }
 
-    public void addAmmo(int amount)
+    public void AddAmmo(int amount)
     {
         totalBullets += amount;
         UpdateAmmoUI();
-        Debug.Log($"Ammo added: {amount}. Total: {totalBullets}");
     }
 
-    public bool NeedsAmmo()
-    {
-        return totalBullets < maxMagazineSize * 3;
-    }
-
+    public bool NeedsAmmo() => totalBullets < maxMagazineSize * 3;
 }

@@ -8,8 +8,6 @@ public class DoorInteraction : MonoBehaviour
     [SerializeField] private AudioClip closeSound;
     private PlayerInventory playerInventory;
     private bool isUnlocked = false;
-    private bool isPlayerInside = false;
-
 
     private void OnTriggerEnter(Collider other)
     {

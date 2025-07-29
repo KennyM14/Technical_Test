@@ -9,7 +9,7 @@ public class Ammo : MonoBehaviour, IPickable
     {
         if (weapon != null && weapon.NeedsAmmo())
         {
-            weapon.addAmmo(ammoAmount);
+            weapon.AddAmmo(ammoAmount);
             if (pickupSound != null)
             {
                 AudioSource.PlayClipAtPoint(pickupSound, transform.position);

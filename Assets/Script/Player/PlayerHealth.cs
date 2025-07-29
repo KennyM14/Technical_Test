@@ -3,12 +3,24 @@ using UnityEngine;
 public class PlayerHealth : MonoBehaviour
 {
     [SerializeField] private int maxHealth = 100;
-    [SerializeField] private int currentHealth;
     [SerializeField] private AudioClip healSound;
+
+    private int currentHealth;
 
     private void Awake()
     {
         currentHealth = maxHealth;
+    }
+
+    public void TakeDamage(int amount)
+    {
+        currentHealth -= amount;
+        Debug.Log($"{gameObject.name} took {amount} damage. Remaining HP: {currentHealth}");
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
     }
 
     public void Heal(int amount)
@@ -19,7 +31,7 @@ public class PlayerHealth : MonoBehaviour
         {
             AudioSource.PlayClipAtPoint(healSound, transform.position);
         }
-        
+
         Debug.Log("Current HP: " + currentHealth);
     }
 
@@ -28,10 +40,16 @@ public class PlayerHealth : MonoBehaviour
         return currentHealth < maxHealth;
     }
 
-    // Para mostrar en UI
     public float GetHealthPercentage()
     {
         return (float)currentHealth / maxHealth;
     }
-    
+
+    private void Die()
+    {
+        Debug.Log($"{gameObject.name} has died.");
+        // Mostrar Game Over, reiniciar escena, etc.
+        Debug.Log("PLAYER DEAD!");
+        Destroy(gameObject); // o aplicar lógica adicional
+    }
 }
