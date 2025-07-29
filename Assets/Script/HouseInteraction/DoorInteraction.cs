@@ -5,45 +5,55 @@ public class DoorInteraction : MonoBehaviour
     [SerializeField] private KeyColor requiredKey;
     [SerializeField] private Animator doorAnimator;
     [SerializeField] private AudioClip openSound;
-    private bool isPlayerNearby = false;
+    [SerializeField] private AudioClip closeSound;
     private PlayerInventory playerInventory;
+    private bool isUnlocked = false;
+    private bool isPlayerInside = false;
 
 
-    void Update()
+    private void OnTriggerEnter(Collider other)
     {
-        if (isPlayerNearby && Input.GetKeyDown(KeyCode.E))
+        if (!other.CompareTag("Player")) return;
+        playerInventory = other.GetComponent<PlayerInventory>();
+        if (isUnlocked)
         {
-            if (playerInventory != null && playerInventory.HasKey(requiredKey))
-            {
-                doorAnimator.SetTrigger("Open");
-
-                if (openSound != null)
-                {
-                    AudioSource.PlayClipAtPoint(openSound, transform.position);
-                }
-
-                playerInventory.UseKey(requiredKey);
-                // Puedes desactivar el collider si quieres que no se cierre nunca
-                GetComponent<Collider>().enabled = false;
-            }
+            OpenDoor();
+        }
+        else if (playerInventory != null && playerInventory.HasKey(requiredKey))
+        {
+            playerInventory.UseKey(requiredKey);
+            isUnlocked = true;
+            OpenDoor();
         }
     }
 
-    void OnTriggerEnter(Collider other)
+    private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (!other.CompareTag("Player")) return;
+        if (isUnlocked)
         {
-            isPlayerNearby = true;
-            playerInventory = other.GetComponent<PlayerInventory>();
+            CloseDoor();
         }
     }
 
-    void OnTriggerExit(Collider other)
+    public void OpenDoor()
     {
-        if (other.CompareTag("Player"))
+        doorAnimator.SetBool("Open", true);
+
+        if (openSound != null)
         {
-            isPlayerNearby = false;
-            playerInventory = null;
+            AudioSource.PlayClipAtPoint(openSound, transform.position);
         }
     }
+
+    private void CloseDoor()
+    {
+        doorAnimator.SetBool("Open", false); 
+
+        if (closeSound != null)
+        {
+            AudioSource.PlayClipAtPoint(closeSound, transform.position);
+        }
+    }
+
 }
