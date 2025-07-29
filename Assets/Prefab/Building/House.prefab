@@ -700,7 +700,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   requiredKey: 2
   doorAnimator: {fileID: 2935716093244580503}
-  openSound: {fileID: 0}
+  openSound: {fileID: 8300000, guid: 3c280a36d1ebaf54a99797a595aa0a1e, type: 3}
   closeSound: {fileID: 0}
 --- !u!1001 &7664399259840956153
 PrefabInstance:
