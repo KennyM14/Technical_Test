@@ -3,32 +3,39 @@ using System.Collections;
 
 public class CutoutObject : MonoBehaviour
 {
-    [SerializeField] private Transform targetObject;
-    [SerializeField] private LayerMask wallMask;
     private Camera mainCamera;
+    private Rigidbody rb;
+    public float holeSize = 0.1f; 
 
     private void Awake()
     {
         mainCamera = GetComponent<Camera>();
+        rb = GetComponent<Rigidbody>();
     }
 
     private void Update()
     {
-        Vector2 cutoutPos = mainCamera.WorldToViewportPoint(targetObject.position);
-        cutoutPos.y /= (Screen.width / Screen.height);
-
-        Vector3 offset = targetObject.position - transform.position;
-        RaycastHit[] hitObjects = Physics.RaycastAll(transform.position, offset, offset.magnitude, wallMask);
-
-        for (int i = 0; i < hitObjects.Length; ++i)
+        Collider[] hitColliders = Physics.OverlapSphere(rb.transform.position, 5f);
+        foreach (var hitCollider in hitColliders)
         {
-            Material[] materials = hitObjects[i].transform.GetComponent<Renderer>().materials;
+            float x = 0f;
 
-            for (int m = 0; m < materials.Length; m++)
+            if (Vector3.Distance(hitCollider.transform.position, mainCamera.transform.position) < Vector3.Distance(rb.centerOfMass + rb.transform.position, mainCamera.transform.position))
             {
-                materials[m].SetVector("_CutoutPos", cutoutPos);
-                materials[m].SetFloat("_CutoutSize", 0.1f);
-                materials[m].SetFloat("_FalloffSize", 0.05f);  
+                x = holeSize;
+            }
+
+            try
+            {
+                Material[] materials = hitCollider.transform.GetComponent<Renderer>().materials;
+                for (int m = 0; m < materials.Length; ++m)
+                {
+                    materials[m].SetFloat("_Step", x); 
+                }
+            }
+            catch
+            {
+
             }
         }
     }
