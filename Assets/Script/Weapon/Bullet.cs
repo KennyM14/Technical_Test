@@ -11,29 +11,35 @@ public class Bullet : MonoBehaviour
         this.owner = owner;
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision collision)
     {
-        if (other.gameObject == owner) return; // No dañar al que disparó
+        GameObject other = collision.gameObject;
 
-        // Si el dueño es el jugador y golpea a un enemigo
+        if (other == owner) return;
+
+        if (collision.gameObject == owner) return; // No dañar al que disparó
+
+        // Si el que disparó es el jugador entonces golpea a un enemigo
         if (owner.CompareTag("Player") && other.CompareTag("Enemy"))
         {
             EnemyHealth enemyHealth = other.GetComponent<EnemyHealth>();
             if (enemyHealth != null)
             {
+                Debug.Log("Impacto bala recibido..."); 
                 enemyHealth.TakeDamage(damage);
-                BulletPool.Instance.ReturnBullet(gameObject);
             }
         }
-        // Si el dueño es un enemigo y golpea al jugador
+
+        // Si el que disparó es un enemigo entonces golpea al jugador
         else if (owner.CompareTag("Enemy") && other.CompareTag("Player"))
         {
             PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
             if (playerHealth != null)
             {
                 playerHealth.TakeDamage(damage);
-                BulletPool.Instance.ReturnBullet(gameObject);
             }
         }
+
+        BulletPool.Instance.ReturnBullet(gameObject);
     }
 }

@@ -17,7 +17,7 @@ public class KeyPickUp : MonoBehaviour, IPickable
                 AudioSource.PlayClipAtPoint(pickupSound, transform.position);
             }
 
-            Destroy(gameObject);
+            gameObject.SetActive(false);
         }
     }
 }

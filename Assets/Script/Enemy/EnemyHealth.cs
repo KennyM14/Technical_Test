@@ -2,10 +2,17 @@ using UnityEngine;
 
 public class EnemyHealth : MonoBehaviour
 {
-    [SerializeField] private int maxHealth = 30;
+    [SerializeField] private int maxHealth = 100;
+    [SerializeField] private int currentHealth;
     [SerializeField] private GameObject deathVFX;
 
-    private int currentHealth;
+    //Play when it´s destroyed
+    [SerializeField] private AudioClip destroyClip;
+
+    //When he received damage
+    [SerializeField] private GameObject hitVFX;
+    [SerializeField] private Transform hitPoint;
+
     private bool isDead = false;
 
     private void Start()
@@ -18,6 +25,12 @@ public class EnemyHealth : MonoBehaviour
         if (isDead) return;
 
         currentHealth -= damage;
+
+        if (hitVFX != null)
+        {
+            Instantiate(hitVFX, hitPoint.position, Quaternion.identity); 
+        }
+
         if (currentHealth <= 0)
         {
             Die();
@@ -33,13 +46,21 @@ public class EnemyHealth : MonoBehaviour
             Instantiate(deathVFX, transform.position, Quaternion.identity);
         }
 
+        if (destroyClip != null)
+        {
+            AudioSource.PlayClipAtPoint(destroyClip, transform.position);
+        }
+
         Destroy(gameObject);
     }
 
-    // Método opcional si planeas reutilizar el enemigo (por pooling, por ejemplo)
+    // Método oen caso de que se necesite reutilizar el enemigo (pool)
     public void ResetHealth()
     {
         isDead = false;
         currentHealth = maxHealth;
     }
+    
+    public int CurrentHealth => currentHealth;
+    public int MaxHealth => maxHealth;
 }

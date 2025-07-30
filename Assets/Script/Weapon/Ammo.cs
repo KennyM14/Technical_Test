@@ -4,6 +4,7 @@ public class Ammo : MonoBehaviour, IPickable
 {
     [SerializeField] private int ammoAmount = 30;
     [SerializeField] private AudioClip pickupSound;
+    [SerializeField] private UIWarning uIWarning; 
 
     public void Pick(PlayerController playerController, PlayerHealth playerHealth, Weapon weapon)
     {
@@ -20,6 +21,10 @@ public class Ammo : MonoBehaviour, IPickable
         else
         {
             Debug.Log("Weapon doesn't need ammo right now");
+            if (uIWarning != null)
+            {
+                uIWarning.ShowAmmoWarning(); 
+            }
         }
     }
 }

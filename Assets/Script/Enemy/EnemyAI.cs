@@ -11,6 +11,8 @@ public class EnemyAI : MonoBehaviour
 
     //Firepoint 
     [SerializeField] private Transform firePoint; 
+    [SerializeField] private AudioClip shootClip;
+    private AudioSource audioSource;
 
     //Patroling
     [SerializeField] private Vector3 walkPoint;
@@ -20,10 +22,12 @@ public class EnemyAI : MonoBehaviour
     //Attacking
     [SerializeField] private float timeBetweenAttack;
     private bool alreadyAttacked;
+    [SerializeField] private GameObject enemyGun;
 
     //States
     [SerializeField] private float sightRange, attackRange;
     private bool playerInSightRange, playerInAttackRange;
+
 
 
     private void Awake()
@@ -31,6 +35,7 @@ public class EnemyAI : MonoBehaviour
         player = GameObject.Find("Player").transform;
         agent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
 
     }
 
@@ -91,9 +96,14 @@ public class EnemyAI : MonoBehaviour
         agent.SetDestination(transform.position);
         transform.LookAt(player);
 
+        if (enemyGun != null)
+        {
+            enemyGun.transform.LookAt(player); 
+        }
+
         if (!alreadyAttacked)
         {
-            //Call Attack method Here
+            //Attack method Here
             anim.SetBool("Shoot", true);
             FireBullet(firePoint, gameObject);
 
@@ -118,6 +128,11 @@ public class EnemyAI : MonoBehaviour
 
         Bullet bulletScript = bullet.GetComponent<Bullet>();
         bulletScript.Initialize(enemyObject);
+
+        if (shootClip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(shootClip);
+        }
 
         StartCoroutine(ReturnAfterTime(bullet, 4f)); // O la duración que quieras
     }

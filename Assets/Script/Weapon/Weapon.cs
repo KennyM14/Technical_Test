@@ -19,6 +19,11 @@ public class Weapon : MonoBehaviour
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI ammoText;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip shootSound;
+    [SerializeField] private AudioClip reloadSound;
+    [SerializeField] private AudioSource audioSource;
+    
     private bool isShooting = false;
     private bool isReloading = false;
     private float nextFireTime;
@@ -57,12 +62,17 @@ public class Weapon : MonoBehaviour
         rb.linearVelocity = firePoint.forward * bulletSpeed;
 
         Bullet bulletScript = bullet.GetComponent<Bullet>();
-        bulletScript.Initialize(owner: gameObject); // El arma es hija del Player
+        bulletScript.Initialize(transform.root.gameObject); // El arma es hija del Player
 
         StartCoroutine(ReleaseAfterTime(bullet, bulletLifeTime));
 
         currentBullets--;
         UpdateAmmoUI();
+
+        if (audioSource != null && shootSound != null)
+        {
+            audioSource.PlayOneShot(shootSound);
+        }
     }
 
     private IEnumerator ReleaseAfterTime(GameObject bullet, float delay)
@@ -74,6 +84,10 @@ public class Weapon : MonoBehaviour
     private IEnumerator Reload()
     {
         isReloading = true;
+        if (audioSource != null && reloadSound != null)
+        {
+            audioSource.PlayOneShot(reloadSound);
+        }
         yield return new WaitForSeconds(reloadTime);
 
         int bulletsNeeded = maxMagazineSize - currentBullets;

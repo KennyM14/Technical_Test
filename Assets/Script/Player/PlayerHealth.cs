@@ -4,8 +4,8 @@ public class PlayerHealth : MonoBehaviour
 {
     [SerializeField] private int maxHealth = 100;
     [SerializeField] private AudioClip healSound;
-
     private int currentHealth;
+    [SerializeField] private GameOverManager gameOverManager; 
 
     private void Awake()
     {
@@ -49,6 +49,10 @@ public class PlayerHealth : MonoBehaviour
     {
         Debug.Log($"{gameObject.name} has died.");
         // Mostrar Game Over, reiniciar escena, etc.
+        if (gameOverManager != null)
+        {
+            gameOverManager.TriggerGameOver(); 
+        }
         Debug.Log("PLAYER DEAD!");
         Destroy(gameObject); // o aplicar lógica adicional
     }
