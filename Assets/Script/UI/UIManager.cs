@@ -8,6 +8,7 @@ public class UIManager : MonoBehaviour
     public GameObject yellowKeyIcon;
     public GameObject redKeyIcon;
     public GameObject blueKeyIcon;
+    public GameObject WeaponIcon;
 
     private void Awake()
     {
@@ -19,6 +20,11 @@ public class UIManager : MonoBehaviour
         {
             Instance = this;
         }
+    }
+
+    void Start()
+    {
+        WeaponIcon.SetActive(true); 
     }
 
     public void ShowKey(KeyColor keyColor, bool show)

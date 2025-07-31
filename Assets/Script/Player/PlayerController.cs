@@ -19,6 +19,10 @@ public class PlayerController : MonoBehaviour
     private Vector2 mouseScreenPos;
     private Quaternion initialGunRotation;
 
+    [Header("Footstep Sound")]
+    [SerializeField] private AudioSource footstepAudioSource;
+    [SerializeField] private AudioClip footstepClip;
+
     private Rigidbody rb;
     private CapsuleCollider capsuleCollider;
     private PlayerInput playerInput;
@@ -92,6 +96,21 @@ public class PlayerController : MonoBehaviour
         movement = new Vector3(inputVector.x, 0, inputVector.y);
         bool isMoving = movement.magnitude > 0.1f;
         anim.SetBool("Running", isMoving);
+
+        if (isMoving && isGrounded)
+        {
+            if (!footstepAudioSource.isPlaying)
+            {
+                footstepAudioSource.Play();
+            }
+        }
+        else
+        {
+            if (footstepAudioSource.isPlaying)
+            {
+                footstepAudioSource.Pause();
+            }
+        }
 
         // Apuntado
         Ray ray = mainCamera.ScreenPointToRay(mouseScreenPos);

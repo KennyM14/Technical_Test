@@ -4,8 +4,11 @@ public class PlayerHealth : MonoBehaviour
 {
     [SerializeField] private int maxHealth = 100;
     [SerializeField] private AudioClip healSound;
-    private int currentHealth;
-    [SerializeField] private GameOverManager gameOverManager; 
+    [SerializeField] private int currentHealth;
+    [SerializeField] private GameManager gameManager;
+    [SerializeField] private GameObject hitVFX;
+    [SerializeField] private GameObject healVFX;
+    [SerializeField] private Transform hitPoint;
 
     private void Awake()
     {
@@ -16,6 +19,11 @@ public class PlayerHealth : MonoBehaviour
     {
         currentHealth -= amount;
         Debug.Log($"{gameObject.name} took {amount} damage. Remaining HP: {currentHealth}");
+
+        if (hitVFX != null)
+        {
+            Instantiate(hitVFX, hitPoint.position, Quaternion.identity); 
+        }
 
         if (currentHealth <= 0)
         {
@@ -30,6 +38,11 @@ public class PlayerHealth : MonoBehaviour
         if (healSound != null)
         {
             AudioSource.PlayClipAtPoint(healSound, transform.position);
+        }
+
+        if (healVFX != null)
+        {
+            Instantiate(healVFX, hitPoint.position, Quaternion.identity); 
         }
 
         Debug.Log("Current HP: " + currentHealth);
@@ -48,12 +61,26 @@ public class PlayerHealth : MonoBehaviour
     private void Die()
     {
         Debug.Log($"{gameObject.name} has died.");
-        // Mostrar Game Over, reiniciar escena, etc.
-        if (gameOverManager != null)
+        GetComponent<PlayerController>().enabled = false;
+
+        if (TryGetComponent<Rigidbody>(out var rb))
         {
-            gameOverManager.TriggerGameOver(); 
+            rb.linearVelocity = Vector3.zero;
+            rb.isKinematic = true;
         }
+
+        GameManager.Instance?.PlayerLoses();
+
+        foreach (var renderer in GetComponentsInChildren<Renderer>())
+        {
+            renderer.enabled = false;
+        }
+
         Debug.Log("PLAYER DEAD!");
-        Destroy(gameObject); // o aplicar lógica adicional
+        Destroy(gameObject, 2f);
+        
     }
+    
+    public int CurrentHealth => currentHealth;
+    public int MaxHealth => maxHealth;
 }

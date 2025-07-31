@@ -51,10 +51,11 @@ public class EnemyHealth : MonoBehaviour
             AudioSource.PlayClipAtPoint(destroyClip, transform.position);
         }
 
+        EnemyManager.Instance?.EnemyDestroyed(); 
         Destroy(gameObject);
     }
 
-    // Método oen caso de que se necesite reutilizar el enemigo (pool)
+    // Método en caso de que se necesite reutilizar el enemigo (pool)
     public void ResetHealth()
     {
         isDead = false;

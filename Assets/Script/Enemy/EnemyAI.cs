@@ -29,7 +29,6 @@ public class EnemyAI : MonoBehaviour
     private bool playerInSightRange, playerInAttackRange;
 
 
-
     private void Awake()
     {
         player = GameObject.Find("Player").transform;
@@ -55,7 +54,7 @@ public class EnemyAI : MonoBehaviour
 
         if (walkPointSet)
         {
-            anim.SetBool("Running", true); 
+            anim.SetBool("Running", true);
             agent.SetDestination(walkPoint);
         }
 
@@ -86,7 +85,7 @@ public class EnemyAI : MonoBehaviour
 
     private void ChasePlayer()
     {
-        anim.SetBool("Running", true); 
+        anim.SetBool("Running", true);
         agent.SetDestination(player.position);
     }
 
@@ -147,7 +146,7 @@ public class EnemyAI : MonoBehaviour
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
-        Gizmos.color = Color.yellow; 
+        Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, sightRange);
     }
 
