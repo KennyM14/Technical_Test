@@ -990,7 +990,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e63c57fc8789a084bb8d8b7c214809f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 150
+  maxHealth: 100
   currentHealth: 0
   deathVFX: {fileID: 7718541898960906401, guid: 42c243992fafdde4e9e9009d03cf2fe4, type: 3}
   destroyClip: {fileID: 8300000, guid: af66162561d2eed40ad49268cab318bb, type: 3}

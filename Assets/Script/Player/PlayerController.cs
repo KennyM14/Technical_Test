@@ -117,7 +117,7 @@ public class PlayerController : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, aimLayerMask))
         {
             Vector3 direction = hit.point - graphicsTransform.position;
-            direction.y = 0f;
+
 
             if (direction.sqrMagnitude > 0.01f)
             {

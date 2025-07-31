@@ -122,6 +122,9 @@ public class EnemyAI : MonoBehaviour
         bullet.transform.position = firePoint.position;
         bullet.transform.rotation = firePoint.rotation;
 
+        //Evitar collisionar con las balas del player
+        bullet.layer = LayerMask.NameToLayer("EnemyBullet");
+
         Rigidbody rb = bullet.GetComponent<Rigidbody>();
         rb.linearVelocity = firePoint.forward * 15f; // Velocidad deseada
 

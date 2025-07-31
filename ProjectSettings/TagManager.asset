@@ -16,8 +16,8 @@ TagManager:
   - Pickable
   - Walls
   - Environment
-  - 
-  - 
+  - EnemyBullet
+  - PlayerBullet
   - 
   - 
   - 

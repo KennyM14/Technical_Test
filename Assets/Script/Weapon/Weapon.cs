@@ -58,6 +58,9 @@ public class Weapon : MonoBehaviour
         bullet.transform.position = firePoint.position;
         bullet.transform.rotation = firePoint.rotation;
 
+        //Evitar collision con las balas disparadas del enemigo
+        bullet.layer = LayerMask.NameToLayer("PlayerBullet");
+
         Rigidbody rb = bullet.GetComponent<Rigidbody>();
         rb.linearVelocity = firePoint.forward * bulletSpeed;
 
