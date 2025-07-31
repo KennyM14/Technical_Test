@@ -51,7 +51,7 @@ public class Outliner : MonoBehaviour
         }
     }
 
-    void OnDestroy()
+    /*void OnDestroy()
     {
         // Solo se destruye la instancia y no el asset original para evitar eliminar el material original
         int index = originalMaterials.Length;
@@ -59,5 +59,5 @@ public class Outliner : MonoBehaviour
         {
             Destroy(outlinedMaterials[index]);
         }
-    }
+    } */
 }

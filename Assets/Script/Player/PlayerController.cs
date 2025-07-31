@@ -6,7 +6,6 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 5f;
-    private float gravity = -9.81f;
     [SerializeField] private Animator anim;
     [SerializeField] private Transform graphicsTransform;
     [SerializeField] private LayerMask aimLayerMask;
@@ -24,8 +23,9 @@ public class PlayerController : MonoBehaviour
 
     [Header("Line Renderer")]
     [SerializeField] private LineRenderer aimLineRenderer;
-    [SerializeField] private Transform firePoint; // Donde empieza el disparo
+    [SerializeField] private Transform firePoint;
     [SerializeField] private float aimDistance = 50f;
+    private bool ignoreHeight = false;
 
     private Rigidbody rb;
     private CapsuleCollider capsuleCollider;
@@ -35,7 +35,8 @@ public class PlayerController : MonoBehaviour
     private bool isShooting;
     private bool rotationAligned = false;
     private Vector3 movement;
-    private bool isGrounded;
+    
+
 
     void Awake()
     {
@@ -97,25 +98,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        movement = new Vector3(inputVector.x, 0, inputVector.y);
-        bool isMoving = movement.magnitude > 0.1f;
-        anim.SetBool("Running", isMoving);
-
-        if (isMoving && isGrounded)
-        {
-            if (!footstepAudioSource.isPlaying)
-            {
-                footstepAudioSource.Play();
-            }
-        }
-        else
-        {
-            if (footstepAudioSource.isPlaying)
-            {
-                footstepAudioSource.Pause();
-            }
-        }
-
+        HandleMovement();
+        HandleFootsteps();
         Aim(); 
     }
     
@@ -129,10 +113,32 @@ public class PlayerController : MonoBehaviour
         velocityChange.y = 0; // La velocidad vertical no cambia
         rb.AddForce(velocityChange, ForceMode.VelocityChange);
         
-        // Aplicar gravedad personalizada
-        if (!isGrounded)
+    }
+
+    private void HandleMovement()
+    {
+        movement = new Vector3(inputVector.x, 0, inputVector.y);
+        bool isMoving = movement.magnitude > 0.1f;
+        anim.SetBool("Running", isMoving);
+    }
+
+    private void HandleFootsteps()
+    {
+        bool isMoving = movement.magnitude > 0.1f;
+
+        if (isMoving)
         {
-            rb.AddForce(new Vector3(0, gravity, 0), ForceMode.Acceleration);
+            if (!footstepAudioSource.isPlaying)
+            {
+                footstepAudioSource.Play();
+            }
+        }
+        else
+        {
+            if (footstepAudioSource.isPlaying)
+            {
+                footstepAudioSource.Pause();
+            }
         }
     }
 
@@ -146,23 +152,21 @@ public class PlayerController : MonoBehaviour
         }
 
         Vector3 direction = position - firePoint.position;
+
+        if (ignoreHeight)
+        {
+            direction.y = 0;
+        }
+
         if (direction.sqrMagnitude < 0.01f) return;
 
         if (isShooting)
         {
             // Rotar al jugador hacia el mouse
-            graphicsTransform.rotation = Quaternion.Slerp(
-                graphicsTransform.rotation,
-                Quaternion.LookRotation(direction),
-                Time.deltaTime * 15f
-            );
+            graphicsTransform.rotation = Quaternion.Slerp(graphicsTransform.rotation, Quaternion.LookRotation(direction), Time.deltaTime * 15f);
 
             // Rotar el arma hacia el frente (apuntado)
-            Gun.transform.localRotation = Quaternion.RotateTowards(
-                Gun.transform.localRotation,
-                Quaternion.Euler(aimingRotation),
-                Time.deltaTime * 300f
-            );
+            Gun.transform.localRotation = Quaternion.RotateTowards(Gun.transform.localRotation, Quaternion.Euler(aimingRotation), Time.deltaTime * 300f);
 
             // Comprobar si está alineada para disparar
             if (!rotationAligned && IsGunAligned())
@@ -171,7 +175,7 @@ public class PlayerController : MonoBehaviour
                 weapon?.SetShooting(true);
             }
 
-            // Línea de apuntado
+            // Line Renderer
             aimLineRenderer.enabled = true;
             aimLineRenderer.SetPosition(0, firePoint.position);
             aimLineRenderer.SetPosition(1, firePoint.position + firePoint.forward * aimDistance);
@@ -184,17 +188,11 @@ public class PlayerController : MonoBehaviour
             if (movement.magnitude > 0.1f)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(movement);
-                graphicsTransform.rotation = Quaternion.Slerp(
-                    graphicsTransform.rotation,
-                    targetRotation,
-                    Time.deltaTime * 10f
-                );
+                graphicsTransform.rotation = Quaternion.Slerp(graphicsTransform.rotation, targetRotation, Time.deltaTime * 10f);
             }
         }
-
     }
     
-
     private (bool success, Vector3 position) GetMousePosition()
     {
         Ray ray = mainCamera.ScreenPointToRay(mouseScreenPos);
@@ -205,22 +203,14 @@ public class PlayerController : MonoBehaviour
         return (false, Vector3.zero);
     }
 
-    void OnCollisionStay(Collision collision)
+    // ignora la diferencia de altura (eje Y)
+    public void OnChangeTargetMode(InputAction.CallbackContext context)
     {
-        // Verificar si está en el suelo
-        foreach (ContactPoint contact in collision.contacts)
+        if (context.performed)
         {
-            if (Vector3.Dot(contact.normal, Vector3.up) > 0.7f)
-            {
-                isGrounded = true;
-                break;
-            }
+            ignoreHeight = !ignoreHeight;
+            Debug.Log("Modo de apuntado cambiado. Ignorar altura: " + ignoreHeight);
         }
-    }
-
-    void OnCollisionExit(Collision collision)
-    {
-        isGrounded = false;
     }
 
     private bool IsGunAligned()
