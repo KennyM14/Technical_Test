@@ -23,6 +23,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AudioSource footstepAudioSource;
     [SerializeField] private AudioClip footstepClip;
 
+    [Header("Line Renderer")]
+    [SerializeField] private LineRenderer aimLineRenderer;
+    [SerializeField] private Transform firePoint; // Donde empieza el disparo
+    [SerializeField] private float aimDistance = 50f;
+
     private Rigidbody rb;
     private CapsuleCollider capsuleCollider;
     private PlayerInput playerInput;
@@ -139,9 +144,25 @@ public class PlayerController : MonoBehaviour
                     Quaternion targetRotation = Quaternion.LookRotation(movement);
                     graphicsTransform.rotation = Quaternion.Slerp(graphicsTransform.rotation, targetRotation, Time.deltaTime * 10f);
                 }
+
+                if (isShooting)
+                {
+                    aimLineRenderer.enabled = true;
+                    aimLineRenderer.SetPosition(0, firePoint.position);
+                    aimLineRenderer.SetPosition(1, firePoint.position + firePoint.forward * aimDistance);
+                }
+                else
+                {
+                    aimLineRenderer.enabled = false;
+                }
             }
         }
+        else
+        {
+            aimLineRenderer.enabled = false;
+        }
     }
+    
 
     void FixedUpdate()
     {

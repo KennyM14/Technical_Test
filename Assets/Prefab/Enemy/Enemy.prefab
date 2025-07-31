@@ -976,8 +976,8 @@ MonoBehaviour:
   walkPointRange: 10
   timeBetweenAttack: 0.25
   enemyGun: {fileID: 8791433807171727496}
-  sightRange: 20
-  attackRange: 16
+  sightRange: 15
+  attackRange: 12
 --- !u!114 &6329140360893620737
 MonoBehaviour:
   m_ObjectHideFlags: 0
