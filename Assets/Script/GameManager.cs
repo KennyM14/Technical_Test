@@ -180,6 +180,7 @@ public class GameManager : MonoBehaviour
     public void BackHome()
     {
         PlayerPrefs.DeleteKey("HasSeenInstructions");
+        AudioListener.pause = false;
         SceneManager.LoadScene("Menu");
     }
 }
