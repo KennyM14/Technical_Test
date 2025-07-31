@@ -41,6 +41,8 @@ public class EnemyHealth : MonoBehaviour
     {
         isDead = true;
 
+        GetComponent<EnemyAI>()?.DisableEnemy();
+
         if (deathVFX != null)
         {
             Instantiate(deathVFX, transform.position, Quaternion.identity);
@@ -52,7 +54,8 @@ public class EnemyHealth : MonoBehaviour
         }
 
         EnemyManager.Instance?.EnemyDestroyed(); 
-        Destroy(gameObject);
+        gameObject.SetActive(false);
+        //Destroy(gameObject);
     }
 
     public int CurrentHealth => currentHealth;

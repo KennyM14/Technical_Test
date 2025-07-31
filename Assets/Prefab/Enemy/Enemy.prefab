@@ -976,8 +976,8 @@ MonoBehaviour:
   walkPointRange: 10
   timeBetweenAttack: 0.25
   enemyGun: {fileID: 8791433807171727496}
-  sightRange: 15
-  attackRange: 12
+  sightRange: 18
+  attackRange: 13
 --- !u!114 &6329140360893620737
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3439,7 +3439,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

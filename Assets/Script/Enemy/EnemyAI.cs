@@ -28,6 +28,7 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private float sightRange, attackRange;
     private bool playerInSightRange, playerInAttackRange;
 
+    private bool isAlive = true;
 
     private void Awake()
     {
@@ -40,6 +41,8 @@ public class EnemyAI : MonoBehaviour
 
     void Update()
     {
+        if (!isAlive) return;
+
         playerInSightRange = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
         playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, whatIsPlayer);
 
@@ -153,4 +156,18 @@ public class EnemyAI : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, sightRange);
     }
 
+    public void DisableEnemy()
+    {
+        isAlive = false;
+        anim.SetBool("Running", false);
+        anim.SetBool("Shoot", false);
+        agent.isStopped = true; // Detiene el movimiento del NavMeshAgent
+
+
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop(); // Detiene sonidos activos
+        }
+    }
+    
 }
