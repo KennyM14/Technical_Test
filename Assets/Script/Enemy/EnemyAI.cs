@@ -10,7 +10,7 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private Animator anim;
 
     //Firepoint 
-    [SerializeField] private Transform firePoint; 
+    [SerializeField] private Transform firePoint;
     [SerializeField] private AudioClip shootClip;
     private AudioSource audioSource;
 
@@ -60,11 +60,10 @@ public class EnemyAI : MonoBehaviour
 
         float distanceToWalkPoint = Vector3.Distance(transform.position, walkPoint);
 
-        //if reached
         if (distanceToWalkPoint < 1f)
         {
             walkPointSet = false;
-            anim.SetBool("Running", false); 
+            anim.SetBool("Running", false);
         }
     }
 
@@ -79,7 +78,7 @@ public class EnemyAI : MonoBehaviour
         if (Physics.Raycast(potentialPoint, Vector3.down, 2f, whatIsGround))
         {
             walkPoint = potentialPoint;
-            walkPointSet = true; 
+            walkPointSet = true;
         }
     }
 
@@ -97,7 +96,7 @@ public class EnemyAI : MonoBehaviour
 
         if (enemyGun != null)
         {
-            enemyGun.transform.LookAt(player); 
+            enemyGun.transform.LookAt(player);
         }
 
         if (!alreadyAttacked)
@@ -126,7 +125,7 @@ public class EnemyAI : MonoBehaviour
         bullet.layer = LayerMask.NameToLayer("EnemyBullet");
 
         Rigidbody rb = bullet.GetComponent<Rigidbody>();
-        rb.linearVelocity = firePoint.forward * 15f; // Velocidad deseada
+        rb.linearVelocity = firePoint.forward * 15f;
 
         Bullet bulletScript = bullet.GetComponent<Bullet>();
         bulletScript.Initialize(enemyObject);
@@ -136,7 +135,7 @@ public class EnemyAI : MonoBehaviour
             audioSource.PlayOneShot(shootClip);
         }
 
-        StartCoroutine(ReturnAfterTime(bullet, 4f)); // O la duración que quieras
+        StartCoroutine(ReturnAfterTime(bullet, 4f));
     }
 
     private IEnumerator ReturnAfterTime(GameObject bullet, float time)
@@ -145,6 +144,7 @@ public class EnemyAI : MonoBehaviour
         BulletPool.Instance.ReturnBullet(bullet);
     }
 
+    //Mostrar gizmos del alcance
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;

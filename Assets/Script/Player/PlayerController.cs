@@ -5,7 +5,6 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(CapsuleCollider))]
 public class PlayerController : MonoBehaviour
 {
-    [Header("Movement & Aiming")]
     [SerializeField] private float moveSpeed = 5f;
     private float gravity = -9.81f;
     [SerializeField] private Animator anim;
@@ -19,7 +18,7 @@ public class PlayerController : MonoBehaviour
     private Vector2 mouseScreenPos;
     private Quaternion initialGunRotation;
 
-    [Header("Footstep Sound")]
+    [Header("Sound")]
     [SerializeField] private AudioSource footstepAudioSource;
     [SerializeField] private AudioClip footstepClip;
 
@@ -117,50 +116,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        // Apuntado
-        Ray ray = mainCamera.ScreenPointToRay(mouseScreenPos);
-        if (Physics.Raycast(ray, out RaycastHit hit, 100f, aimLayerMask))
-        {
-            Vector3 direction = hit.point - graphicsTransform.position;
-
-
-            if (direction.sqrMagnitude > 0.01f)
-            {
-                Quaternion lookRotation = Quaternion.LookRotation(direction);
-
-                if (isShooting)
-                {
-                    graphicsTransform.rotation = Quaternion.Slerp(graphicsTransform.rotation, lookRotation, Time.deltaTime * 15f);
-                    Gun.transform.localRotation = Quaternion.RotateTowards(Gun.transform.localRotation, Quaternion.Euler(aimingRotation), Time.deltaTime * 300f);
-
-                    if (!rotationAligned && IsGunAligned())
-                    {
-                        rotationAligned = true;
-                        weapon?.SetShooting(true);
-                    }
-                }
-                else if (isMoving)
-                {
-                    Quaternion targetRotation = Quaternion.LookRotation(movement);
-                    graphicsTransform.rotation = Quaternion.Slerp(graphicsTransform.rotation, targetRotation, Time.deltaTime * 10f);
-                }
-
-                if (isShooting)
-                {
-                    aimLineRenderer.enabled = true;
-                    aimLineRenderer.SetPosition(0, firePoint.position);
-                    aimLineRenderer.SetPosition(1, firePoint.position + firePoint.forward * aimDistance);
-                }
-                else
-                {
-                    aimLineRenderer.enabled = false;
-                }
-            }
-        }
-        else
-        {
-            aimLineRenderer.enabled = false;
-        }
+        Aim(); 
     }
     
 
@@ -178,6 +134,75 @@ public class PlayerController : MonoBehaviour
         {
             rb.AddForce(new Vector3(0, gravity, 0), ForceMode.Acceleration);
         }
+    }
+
+    private void Aim()
+    {
+        var (success, position) = GetMousePosition();
+        if (!success)
+        {
+            aimLineRenderer.enabled = false;
+            return;
+        }
+
+        Vector3 direction = position - firePoint.position;
+        if (direction.sqrMagnitude < 0.01f) return;
+
+        if (isShooting)
+        {
+            // Rotar al jugador hacia el mouse
+            graphicsTransform.rotation = Quaternion.Slerp(
+                graphicsTransform.rotation,
+                Quaternion.LookRotation(direction),
+                Time.deltaTime * 15f
+            );
+
+            // Rotar el arma hacia el frente (apuntado)
+            Gun.transform.localRotation = Quaternion.RotateTowards(
+                Gun.transform.localRotation,
+                Quaternion.Euler(aimingRotation),
+                Time.deltaTime * 300f
+            );
+
+            // Comprobar si está alineada para disparar
+            if (!rotationAligned && IsGunAligned())
+            {
+                rotationAligned = true;
+                weapon?.SetShooting(true);
+            }
+
+            // Línea de apuntado
+            aimLineRenderer.enabled = true;
+            aimLineRenderer.SetPosition(0, firePoint.position);
+            aimLineRenderer.SetPosition(1, firePoint.position + firePoint.forward * aimDistance);
+        }
+        else
+        {
+            aimLineRenderer.enabled = false;
+
+            // Solo rotar al moverse si no se está disparando
+            if (movement.magnitude > 0.1f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(movement);
+                graphicsTransform.rotation = Quaternion.Slerp(
+                    graphicsTransform.rotation,
+                    targetRotation,
+                    Time.deltaTime * 10f
+                );
+            }
+        }
+
+    }
+    
+
+    private (bool success, Vector3 position) GetMousePosition()
+    {
+        Ray ray = mainCamera.ScreenPointToRay(mouseScreenPos);
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, aimLayerMask))
+        {
+            return (true, hit.point);
+        }
+        return (false, Vector3.zero);
     }
 
     void OnCollisionStay(Collision collision)
@@ -200,7 +225,6 @@ public class PlayerController : MonoBehaviour
 
     private bool IsGunAligned()
     {
-        float angle = Quaternion.Angle(Gun.transform.localRotation, Quaternion.Euler(aimingRotation));
-        return angle < 1f; 
+        return Quaternion.Angle(Gun.transform.localRotation, Quaternion.Euler(aimingRotation)) < 1f;
     }
 }

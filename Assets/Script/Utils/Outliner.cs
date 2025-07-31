@@ -13,6 +13,9 @@ public class Outliner : MonoBehaviour
     {
         objectRenderer = GetComponent<MeshRenderer>();
         originalMaterials = objectRenderer.materials;
+
+        //Crear una instancia del material para evitar modificar el asset
+        Material outlineInstance = Instantiate(outlineMaterial);
         
         // material original + outline
         outlinedMaterials = new Material[originalMaterials.Length + 1];
@@ -50,16 +53,11 @@ public class Outliner : MonoBehaviour
 
     void OnDestroy()
     {
-        // Limpiar materiales
-        if (outlinedMaterials != null)
+        // Solo se destruye la instancia y no el asset original para evitar eliminar el material original
+        int index = originalMaterials.Length;
+        if (outlinedMaterials != null && outlinedMaterials.Length > index && outlinedMaterials[index] != null)
         {
-            for (int i = originalMaterials.Length; i < outlinedMaterials.Length; i++)
-            {
-                if (outlinedMaterials[i] != null)
-                {
-                    Destroy(outlinedMaterials[i]);
-                }
-            }
+            Destroy(outlinedMaterials[index]);
         }
     }
 }

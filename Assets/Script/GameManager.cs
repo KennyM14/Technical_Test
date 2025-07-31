@@ -45,12 +45,13 @@ public class GameManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            PauseGame(); 
+            PauseGame();
         }
     }
 
     public void PauseGame()
     {
+        //toggle pause
         isPaused = !isPaused;
 
         if (isPaused)
@@ -111,7 +112,7 @@ public class GameManager : MonoBehaviour
     {
         AudioListener.pause = true;
 
-        var playerAudio = FindObjectOfType<PlayerController>()?.GetComponent<AudioSource>();
+        var playerAudio = Object.FindFirstObjectByType<PlayerController>()?.GetComponent<AudioSource>();
         if (playerAudio != null) playerAudio.Stop();
     }
 

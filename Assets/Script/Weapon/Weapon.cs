@@ -13,7 +13,7 @@ public class Weapon : MonoBehaviour
     [SerializeField] private float fireRate = 0.2f;
     [SerializeField] private int maxMagazineSize = 30;
     [SerializeField] private int currentBullets = 30;
-    [SerializeField] private int totalBullets = 90;
+    [SerializeField] private int totalBullets = 120;
     [SerializeField] private float reloadTime = 2f;
 
     [Header("UI")]
@@ -56,7 +56,7 @@ public class Weapon : MonoBehaviour
     {
         GameObject bullet = BulletPool.Instance.GetBullet();
         bullet.transform.position = firePoint.position;
-        bullet.transform.rotation = firePoint.rotation;
+        bullet.transform.rotation = Quaternion.LookRotation(firePoint.forward);
 
         //Evitar collision con las balas disparadas del enemigo
         bullet.layer = LayerMask.NameToLayer("PlayerBullet");
@@ -124,5 +124,5 @@ public class Weapon : MonoBehaviour
         UpdateAmmoUI();
     }
 
-    public bool NeedsAmmo() => totalBullets < maxMagazineSize * 3;
+    public bool NeedsAmmo() => totalBullets < maxMagazineSize * 4;
 }

@@ -1,11 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro; 
 
 public class InstructionManager : MonoBehaviour
 {
     public GameObject[] instructionPanels;
     private int currentIndex = 0;
     private const string FirstTimeKey = "HasSeenInstructions";
+    public TextMeshProUGUI enemyCounterText;
+    public TextMeshProUGUI objectiveText;
 
     void Start()
     {
@@ -16,6 +19,9 @@ public class InstructionManager : MonoBehaviour
         {
             Time.timeScale = 0f;
             ShowCurrentPanel();
+
+            enemyCounterText.gameObject.SetActive(false); 
+            objectiveText.gameObject.SetActive(false); 
         }
         else
         {
@@ -38,7 +44,10 @@ public class InstructionManager : MonoBehaviour
         {
             Time.timeScale = 1f;
             PlayerPrefs.SetInt(FirstTimeKey, 1);
-            gameObject.SetActive(false); 
+            gameObject.SetActive(false);
+
+            enemyCounterText.gameObject.SetActive(true);
+            objectiveText.gameObject.SetActive(true); 
         }
     }
 

@@ -55,13 +55,6 @@ public class EnemyHealth : MonoBehaviour
         Destroy(gameObject);
     }
 
-    // Método en caso de que se necesite reutilizar el enemigo (pool)
-    public void ResetHealth()
-    {
-        isDead = false;
-        currentHealth = maxHealth;
-    }
-    
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
 }
